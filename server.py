@@ -17,7 +17,7 @@ s.listen(2) # how many clients (listeners) do you
 print("Waiting for a connection, Server Started")
 
 def threaded_clients(conn):
-    
+    conn.send(str.encode("Connected"))
     reply = ""
     while True:
         try:
@@ -33,10 +33,12 @@ def threaded_clients(conn):
                 
             conn.sendall(str.encode(reply)) #encoding the data before sending it
         except:
-            break;
-            
+            break
+
+    print("Lost conncetion")
+    conn.close()
         
-while True:
+while True:  
     conn, addr = s.accept() # conn is the connection, addr is the ip address
     print("Connected to:", addr)
     
