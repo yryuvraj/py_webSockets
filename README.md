@@ -1,4 +1,4 @@
-# Pygame Player Movement
+# Client + Server WebSockets
 
 This simple Pygame script allows you to control a player on the screen using arrow keys. The player can move in all directions - left, right, up, and down.
 
