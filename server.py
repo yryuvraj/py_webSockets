@@ -1,46 +1,60 @@
 import socket
-from _thread import * # this is for threading
+from _thread import *
 
 server = "172.16.96.243"
 port = 5555
 
-# these are types of connections
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
     s.bind((server, port))
 except socket.error as e:
     str(e)
-    
-s.listen(2) # how many clients (listeners) do you 
-            # want to let connect to your server
+
+s.listen(2)
 print("Waiting for a connection, Server Started")
 
-def threaded_clients(conn):
-    conn.send(str.encode("Connected"))
+def read_pos(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+pos = [(0,0),(100,100)]
+
+def threaded_client(conn, player):
+    conn.send(str.encode(make_pos(pos[player])))
     reply = ""
     while True:
         try:
-            data = conn.recv(2048) # how much data do you want to receive
-            reply = data.decode("utf-8")
-            
+            data = read_pos(conn.recv(2048).decode())
+            pos[player] = data
+
             if not data:
                 print("Disconnected")
                 break
             else:
-                print("Received:", reply)
-                print("Sending:", reply)
-                
-            conn.sendall(str.encode(reply)) #encoding the data before sending it
+                if player == 1:
+                    reply = pos[0]
+                else:
+                    reply = pos[1]
+
+                print("Received: ", data)
+                print("Sending : ", reply)
+
+            conn.sendall(str.encode(make_pos(reply)))
         except:
             break
 
-    print("Lost conncetion")
+    print("Lost connection")
     conn.close()
-        
-while True:  
-    conn, addr = s.accept() # conn is the connection, addr is the ip address
-    print("Connected to:", addr)
-    
-    start_new_thread(threaded_clients, (conn,))  
 
+currentPlayer = 0
+while True:
+    conn, addr = s.accept()
+    print("Connected to:", addr)
+
+    start_new_thread(threaded_client, (conn, currentPlayer))
+    currentPlayer += 1
